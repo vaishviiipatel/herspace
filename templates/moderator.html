@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Moderator Panel - HerSpace{% endblock %}
+
+{% block content %}
+<div class="moderator-container">
+    <div class="moderator-card">
+        <header class="moderator-header">
+            <h1 class="moderator-title">Moderator Panel</h1>
+            <p class="moderator-description">Review flagged posts and pending approvals</p>
+        </header>
+        
+        {% if posts %}
+        <div class="posts-list">
+            {% for post in posts %}
+            <article class="post-card {% if post.is_flagged %}flagged{% endif %}">
+                {% if post.is_flagged %}
+                <div class="warning-banner">
+                    <span class="warning-icon">⚠</span>
+                    <span class="warning-text">This post has been flagged for review</span>
+                </div>
+                {% endif %}
+                
+                {% if not post.is_approved %}
+                <div class="pending-banner">
+                    <span class="pending-text">Pending approval</span>
+                </div>
+                {% endif %}
+                
+                <div class="post-header">
+                    <div class="post-author">
+                        {% if post.is_anonymous %}
+                        <div class="avatar avatar-anonymous">?</div>
+                        <span class="author-name anonymous">anonymous</span>
+                        {% else %}
+                        <div class="avatar">{{ post.username[0] | upper }}</div>
+                        <span class="author-name">{{ post.username }}</span>
+                        {% endif %}
+                    </div>
+                    <span class="post-tag tag-{{ post.category|lower }}">{{ post.category }}</span>
+                </div>
+                
+                <div class="post-time">{{ post.created_at }}</div>
+                
+                <div class="post-content">
+                    {{ post.content }}
+                </div>
+                
+                <div class="moderator-actions">
+                    <a href="{{ url_for('approve_post', post_id=post.id) }}" class="btn-action btn-approve">Approve</a>
+                    <a href="{{ url_for('reject_post', post_id=post.id) }}" class="btn-action btn-reject">Reject</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">✓</div>
+            <p class="empty-state-text">No posts to review at this time.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

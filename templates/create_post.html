@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Create Post - HerSpace{% endblock %}
+
+{% block content %}
+<div class="create-post-container">
+    <div class="create-post-card">
+        <div class="create-post-header">
+            <h2 class="create-post-title">Share what's on your mind</h2>
+            <p class="create-post-description">Connect with others in our supportive community</p>
+        </div>
+        
+        <form method="POST" action="{{ url_for('create_post') }}" class="create-post-form">
+            <div class="form-group">
+                <textarea id="content" name="content" rows="8" placeholder="what's on your mind today?" required class="form-textarea"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <div class="category-pills">
+                    <button type="button" class="category-pill{% if not selected_category or selected_category == 'Support' %} active{% endif %}" data-value="Support">Support</button>
+                    <button type="button" class="category-pill{% if selected_category == 'Advice' %} active{% endif %}" data-value="Advice">Advice</button>
+                    <button type="button" class="category-pill{% if selected_category == 'Experience' %} active{% endif %}" data-value="Experience">Experience</button>
+                    <button type="button" class="category-pill{% if selected_category == 'Question' %} active{% endif %}" data-value="Question">Question</button>
+                    <button type="button" class="category-pill{% if selected_category == 'General' %} active{% endif %}" data-value="General">General</button>
+                </div>
+                <input type="hidden" name="category" id="category-input" value="{{ selected_category | default('Support') }}">
+            </div>
+            
+            <div class="form-group">
+                <label class="toggle-label">
+                    <span class="toggle-text">Post anonymously</span>
+                    <span class="toggle-switch">
+                        <input type="checkbox" id="anonymous" name="anonymous">
+                        <span class="toggle-slider"></span>
+                    </span>
+                </label>
+            </div>
+            
+            <button type="submit" class="btn-submit">Share post</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var categoryPills = document.querySelectorAll('.category-pill');
+    var categoryInput = document.getElementById('category-input');
+    
+    categoryPills.forEach(function(pill) {
+        pill.addEventListener('click', function() {
+            categoryPills.forEach(function(p) {
+                p.classList.remove('active');
+            });
+            this.classList.add('active');
+            categoryInput.value = this.getAttribute('data-value');
+        });
+    });
+});
+</script>
+{% endblock %}

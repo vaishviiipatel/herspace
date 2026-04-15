@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Home - HerSpace{% endblock %}
+
+{% block content %}
+<!-- Filter Pills -->
+<div class="filter-bar">
+    <a href="{{ url_for('home') }}" class="filter-pill{% if not filter %} active{% endif %}">All</a>
+    <a href="{{ url_for('home') }}?filter=support" class="filter-pill{% if filter == 'support' %} active{% endif %}">Support</a>
+    <a href="{{ url_for('home') }}?filter=advice" class="filter-pill{% if filter == 'advice' %} active{% endif %}">Advice</a>
+    <a href="{{ url_for('home') }}?filter=experience" class="filter-pill{% if filter == 'experience' %} active{% endif %}">Experience</a>
+    <a href="{{ url_for('home') }}?filter=question" class="filter-pill{% if filter == 'question' %} active{% endif %}">Question</a>
+    <a href="{{ url_for('home') }}?filter=anonymous" class="filter-pill{% if filter == 'anonymous' %} active{% endif %}">Anonymous</a>
+</div>
+
+<!-- Posts Feed -->
+<div class="posts-feed">
+    {% if posts %}
+        {% for post in posts %}
+        <article class="post-card">
+            <div class="post-header">
+                <div class="post-author">
+                    {% if post.is_anonymous %}
+                    <div class="avatar avatar-anonymous">?</div>
+                    <span class="author-name anonymous">anonymous</span>
+                    {% else %}
+                    <div class="avatar" style="background-color: {{ post.username|length * 17 ~ '#d4527a'|string|slice(1,7) }}">{{ post.username[0] | upper }}</div>
+                    <span class="author-name">{{ post.username }}</span>
+                    {% endif %}
+                </div>
+                <span class="post-tag tag-{{ post.category|lower }}">{{ post.category }}</span>
+            </div>
+            
+            <div class="post-time">{{ post.created_at }}</div>
+            
+            <div class="post-content">
+                {{ post.content }}
+            </div>
+            
+            <div class="post-actions">
+                <button class="action-btn">
+                    <span class="action-icon">♡</span>
+                    <span class="action-count">0</span>
+                </button>
+                <button class="action-btn">
+                    <span class="action-icon">↳</span>
+                    <span class="action-count">0</span>
+                </button>
+                <button class="action-btn bookmark">
+                    <span class="action-icon">♡</span>
+                </button>
+            </div>
+        </article>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">✦</div>
+            <p class="empty-state-text">No posts yet. Be the first to share something!</p>
+            {% if session.user_id %}
+            <a href="{{ url_for('create_post') }}" class="btn-primary">Create a post</a>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="btn-primary">Login to post</a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- Sticky Compose Bar -->
+{% if session.user_id %}
+<div class="compose-bar-sticky">
+    <a href="{{ url_for('create_post') }}" class="btn-compose">+ new post</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HerSpace{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Mobile menu button -->
+        <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">HerSpace ✦</h1>
+                <p class="tagline">your safe corner of the internet</p>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <span class="nav-section-label">Browse</span>
+                    <a href="{{ url_for('home') }}" class="nav-link{% if request.endpoint == 'home' and not request.args.get('filter') %} active{% endif %}">
+                        <span class="nav-dot" style="background-color: var(--color-tag-general);"></span>
+                        <span>All Posts</span>
+                    </a>
+                    <a href="{{ url_for('home') }}?filter=support" class="nav-link{% if request.args.get('filter') == 'support' %} active{% endif %}">
+                        <span class="nav-dot" style="background-color: var(--color-tag-support);"></span>
+                        <span>Support</span>
+                    </a>
+                    <a href="{{ url_for('home') }}?filter=advice" class="nav-link{% if request.args.get('filter') == 'advice' %} active{% endif %}">
+                        <span class="nav-dot" style="background-color: var(--color-tag-advice);"></span>
+                        <span>Advice</span>
+                    </a>
+                    <a href="{{ url_for('home') }}?filter=experience" class="nav-link{% if request.args.get('filter') == 'experience' %} active{% endif %}">
+                        <span class="nav-dot" style="background-color: var(--color-tag-experience);"></span>
+                        <span>Experience</span>
+                    </a>
+                    <a href="{{ url_for('home') }}?filter=question" class="nav-link{% if request.args.get('filter') == 'question' %} active{% endif %}">
+                        <span class="nav-dot" style="background-color: var(--color-tag-question);"></span>
+                        <span>Question</span>
+                    </a>
+                    <a href="{{ url_for('home') }}?filter=anonymous" class="nav-link{% if request.args.get('filter') == 'anonymous' %} active{% endif %}">
+                        <span class="nav-dot" style="background-color: var(--color-tag-general);"></span>
+                        <span>Anonymous</span>
+                    </a>
+                </div>
+                
+                {% if session.role in ['moderator', 'admin'] %}
+                <div class="nav-section">
+                    <span class="nav-section-label">Moderation</span>
+                    <a href="{{ url_for('moderator') }}" class="nav-link{% if request.endpoint == 'moderator' %} active{% endif %}">
+                        <span class="nav-dot" style="background-color: var(--color-primary);"></span>
+                        <span>Moderator</span>
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if session.role == 'admin' %}
+                <div class="nav-section">
+                    <span class="nav-section-label">Admin</span>
+                    <a href="{{ url_for('admin') }}" class="nav-link{% if request.endpoint == 'admin' %} active{% endif %}">
+                        <span class="nav-dot" style="background-color: var(--color-accent);"></span>
+                        <span>Admin Panel</span>
+                    </a>
+                </div>
+                {% endif %}
+            </nav>
+            
+            <div class="sidebar-footer">
+                {% if session.user_id %}
+                <div class="user-info">
+                    <div class="avatar">{{ session.username[0] | upper }}</div>
+                    <div class="user-details">
+                        <span class="username">{{ session.username }}</span>
+                        <span class="user-role">{{ session.role }}</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="nav-link logout-link">
+                    <span class="nav-dot" style="background-color: var(--color-text-muted);"></span>
+                    <span>Logout</span>
+                </a>
+                {% else %}
+                <a href="{{ url_for('login') }}" class="nav-link">
+                    <span class="nav-dot" style="background-color: var(--color-text-muted);"></span>
+                    <span>Login</span>
+                </a>
+                {% endif %}
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="top-bar-content">
+                    <h1 class="page-title">{{ title | default('HerSpace') }}</h1>
+                    <p class="page-subtitle">a verified women-only space</p>
+                </div>
+                {% if session.user_id %}
+                <a href="{{ url_for('create_post') }}" class="btn-new-post">+ new post</a>
+                {% endif %}
+            </header>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for message in messages %}
+                            <div class="flash-message">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Page Content -->
+            <div class="page-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+</body>
+</html>
