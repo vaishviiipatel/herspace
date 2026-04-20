@@ -47,7 +47,7 @@ Open your browser and go to:
 http://127.0.0.1:5000
 ```
 
-That's it — the database gets created automatically on first run.
+That's it - the database gets created automatically on first run.
 
 ---
 
