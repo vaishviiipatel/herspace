@@ -51,6 +51,33 @@ def setup_db():
         )
     ''')
 
+    # likes table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS likes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            post_id INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id),
+            FOREIGN KEY (post_id) REFERENCES posts (id),
+            UNIQUE(user_id, post_id)
+        )
+    ''')
+
+    # comments table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS comments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            content TEXT NOT NULL,
+            user_id INTEGER,
+            post_id INTEGER,
+            is_anonymous INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id),
+            FOREIGN KEY (post_id) REFERENCES posts (id)
+        )
+    ''')
+
     conn.commit()
     conn.close()
 
@@ -101,24 +128,137 @@ def admin_required(f):
     return check_admin
 
 
-# home page - shows all approved posts
+# home page - shows all approved posts, optionally filtered by category
 @app.route('/')
-def home():
+@app.route('/category/<category>')
+def home(category=None):
     conn = get_db()
     c = conn.cursor()
 
-    # get posts and also grab the username using a join
-    c.execute('''
-        SELECT posts.*, users.username
-        FROM posts
-        LEFT JOIN users ON posts.user_id = users.id
-        WHERE posts.is_approved = 1
-        ORDER BY posts.created_at DESC
-    ''')
+    if category:
+        c.execute('''
+            SELECT posts.*, users.username
+            FROM posts
+            LEFT JOIN users ON posts.user_id = users.id
+            WHERE posts.is_approved = 1 AND posts.category = ?
+            ORDER BY posts.created_at DESC
+        ''', (category,))
+    else:
+        c.execute('''
+            SELECT posts.*, users.username
+            FROM posts
+            LEFT JOIN users ON posts.user_id = users.id
+            WHERE posts.is_approved = 1
+            ORDER BY posts.created_at DESC
+        ''')
     all_posts = c.fetchall()
+
+    # get like counts for each post
+    like_counts = {}
+    c.execute('SELECT post_id, COUNT(*) as count FROM likes GROUP BY post_id')
+    for row in c.fetchall():
+        like_counts[row['post_id']] = row['count']
+
+    # get comment counts for each post
+    comment_counts = {}
+    c.execute('SELECT post_id, COUNT(*) as count FROM comments GROUP BY post_id')
+    for row in c.fetchall():
+        comment_counts[row['post_id']] = row['count']
+
+    # check which posts current user has liked
+    user_likes = set()
+    if 'user_id' in session:
+        c.execute('SELECT post_id FROM likes WHERE user_id = ?', (session['user_id'],))
+        for row in c.fetchall():
+            user_likes.add(row['post_id'])
+
     conn.close()
 
-    return render_template('home.html', posts=all_posts)
+    return render_template('home.html', posts=all_posts, current_category=category,
+                           like_counts=like_counts, comment_counts=comment_counts,
+                           user_likes=user_likes)
+
+
+# like a post
+@app.route('/like/<int:post_id>', methods=['POST'])
+@login_required
+def like_post(post_id):
+    conn = get_db()
+    c = conn.cursor()
+    try:
+        c.execute('INSERT INTO likes (user_id, post_id) VALUES (?, ?)',
+                  (session['user_id'], post_id))
+        conn.commit()
+    except sqlite3.IntegrityError:
+        # already liked
+        pass
+    conn.close()
+    cat = request.args.get('category')
+    if cat:
+        return redirect(url_for('home', category=cat))
+    return redirect(url_for('home'))
+
+
+# unlike a post
+@app.route('/unlike/<int:post_id>', methods=['POST'])
+@login_required
+def unlike_post(post_id):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('DELETE FROM likes WHERE user_id = ? AND post_id = ?',
+              (session['user_id'], post_id))
+    conn.commit()
+    conn.close()
+
+    cat = request.args.get('category')
+    if cat:
+        return redirect(url_for('home', category=cat))
+    return redirect(url_for('home'))
+
+
+# add a comment
+@app.route('/comment/<int:post_id>', methods=['POST'])
+@login_required
+def add_comment(post_id):
+    content = request.form['content']
+    is_anon = 1 if request.form.get('anonymous') else 0
+
+    conn = get_db()
+    c = conn.cursor()
+    c.execute('''
+        INSERT INTO comments (content, user_id, post_id, is_anonymous)
+        VALUES (?, ?, ?, ?)
+    ''', (content, session['user_id'], post_id, is_anon))
+    conn.commit()
+    conn.close()
+
+    cat = request.args.get('category')
+    if cat:
+        return redirect(url_for('home', category=cat))
+    return redirect(url_for('home'))
+
+
+# delete own post
+@app.route('/delete_post/<int:post_id>')
+@login_required
+def delete_post(post_id):
+    conn = get_db()
+    c = conn.cursor()
+    # verify ownership
+    c.execute('SELECT user_id FROM posts WHERE id = ?', (post_id,))
+    post = c.fetchone()
+    if post and post['user_id'] == session['user_id']:
+        c.execute('DELETE FROM posts WHERE id = ?', (post_id,))
+        conn.commit()
+        flash('Post deleted.')
+    else:
+        flash('You can only delete your own posts.')
+    conn.close()
+
+    cat = request.args.get('category')
+    if cat:
+        return redirect(url_for('home', category=cat))
+    return redirect(url_for('home'))
 
 
 # login page

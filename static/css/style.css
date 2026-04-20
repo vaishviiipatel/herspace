@@ -352,6 +352,101 @@ body {
     color: var(--color-primary);
 }
 
+.action-btn.liked {
+    color: var(--color-primary);
+}
+
+.action-btn.delete {
+    color: #e74c3c;
+    margin-left: auto;
+}
+
+.action-btn.delete:hover {
+    background-color: #fdf2f5;
+    color: #c0392b;
+}
+
+.action-btn.disabled {
+    cursor: default;
+    opacity: 0.6;
+}
+
+.action-btn.disabled:hover {
+    background: none;
+    color: var(--color-text-muted);
+}
+
+/* Comments Section */
+.comments-section {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--color-border);
+    display: none;
+}
+
+.comments-section.open {
+    display: block;
+}
+
+.comment-form {
+    margin-top: 8px;
+}
+
+.comment-form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 13px;
+    resize: vertical;
+    min-height: 60px;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+}
+
+.comment-form textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    gap: 12px;
+}
+
+.form-row label {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.form-row input[type="checkbox"] {
+    accent-color: var(--color-primary);
+}
+
+.btn-small {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+}
+
+.btn-small:hover {
+    background-color: var(--color-primary-hover);
+}
+
 /* Empty State */
 .empty-state {
     text-align: center;

@@ -1,111 +1,122 @@
-# HerSpace
+# HerSpace 
 
-A simple Flask web application for sharing posts with moderation features.
+HerSpace is a women-only social platform built with Python and Flask. The idea behind it was to create a safe, judgment-free space where women can share their thoughts, ask for advice, and support each other  kind of like a private community forum but with a warm, modern feel.
 
-## Features
+Users can post under their own name or stay completely anonymous, and every post goes through a moderation system to keep the space respectful and safe.
 
-- User registration, login, and logout
-- Three user roles: user, moderator, and admin
-- Create text-only posts with categories
-- Optional anonymous posting
-- Rule-based moderation using keyword filtering
-- Flagged posts visible only to moderators
-- Moderator approval and rejection system
-- Admin panel to manage users and roles
-- SQLite database with automatic table creation
+This project was built as part of our 2nd year Python course. We handled everything from scratch - the database, user authentication, role system, and moderation  using only Flask and SQLite with no extra frameworks.
 
-## Requirements
+---
 
-- Python 3
-- Flask
-- Works on 8GB RAM laptop
-- Runs locally
+## What it does
 
-## Installation
+- Users can register, log in, and log out
+- Posts can be made publicly or anonymously
+- Posts are sorted into categories: General, Support, Advice, Experience, Question
+- A keyword-based filter automatically flags posts with inappropriate language
+- Flagged posts are hidden until a moderator reviews and approves them
+- Three roles: regular user, moderator, and admin
+- Admins can promote users to moderators or remove accounts entirely
+- Clean, responsive UI that works on both desktop and mobile
 
-1. Make sure you have Python 3 installed on your computer.
+---
 
-2. Install Flask using pip:
-   ```
-   pip install flask
-   ```
+## How to run it
 
-3. Navigate to the HerSpace directory:
-   ```
-   cd HerSpace
-   ```
+Make sure you have Python 3 installed, then install Flask:
 
-## Running the Application
+```
+pip install flask
+```
 
-1. Run the application:
-   ```
-   python app.py
-   ```
+Navigate into the project folder:
 
-2. Open your web browser and go to:
-   ```
-   http://127.0.0.1:5000
-   ```
+```
+cd HerSpace
+```
 
-## Default Admin Account
+Run the app:
 
-When you run the application for the first time, an admin account is automatically created:
+```
+python app.py
+```
 
-- Username: `admin`
-- Password: `admin123`
+Open your browser and go to:
 
-You can use this account to access the admin panel and manage other users.
+```
+http://127.0.0.1:5000
+```
 
-## User Roles
+That's it - the database gets created automatically on first run.
 
-- **User**: Can create posts and view approved posts
-- **Moderator**: Can view flagged posts, approve or reject posts
-- **Admin**: Can do everything a moderator can do, plus manage users and change roles
+---
 
-## Moderation System
+## Default admin account
 
-The application uses a rule-based moderation system with a list of bad words. Posts containing these words are automatically flagged and require moderator approval before being visible to regular users.
+An admin account is created automatically when you first run the app:
 
-## Categories
+- **Username:** admin
+- **Password:** admin123
 
-Posts can be categorized as:
-- General
-- Discussion
-- Question
-- Experience
-- Advice
-- Support
+Use this to access the admin panel and manage users.
 
-## Project Structure
+---
+
+## User roles
+
+| Role & What they can do |
+
+| User  - Register, log in, create posts, browse the feed |
+
+| Moderator - Everything a user can do + review and approve/reject flagged posts |
+
+| Admin - Everything a moderator can do + manage users, change roles, delete accounts |
+
+
+---
+
+## Moderation system
+
+When a post is submitted, the app checks the text against a list of flagged keywords. If any match, the post is automatically hidden and sent to the moderator panel for review. Moderators can then approve it (makes it visible) or reject it (deletes it). This way the feed stays clean without needing to manually check every single post.
+
+---
+
+## Project structure
 
 ```
 HerSpace/
-├── app.py                 # Main Flask application
-├── herSpace.db            # SQLite database (auto-created)
-├── templates/             # HTML templates
+├── app.py                 # all the routes and backend logic
+├── herSpace.db            # sqlite database (created automatically)
+├── templates/
+│   ├── base.html          # shared layout used by all pages
 │   ├── login.html
 │   ├── register.html
-│   ├── home.html
+│   ├── home.html          # main feed with filter pills
 │   ├── create_post.html
-│   ├── moderator.html
-│   └── admin.html
-├── static/                # Static files
-│   └── css/
-│       └── style.css      # Stylesheet
-└── README.md              # This file
+│   ├── moderator.html     # flagged posts review panel
+│   └── admin.html         # user management panel
+└── static/
+    └── css/
+        └── style.css      # all the styling
 ```
 
-## Usage
+---
 
-1. Register a new account or login with the admin account
-2. Create posts with different categories
-3. Choose to post anonymously if desired
-4. Moderators can review flagged posts in the Moderator Panel
-5. Admins can manage users in the Admin Panel
+## Tech used
+
+- **Python 3** — backend logic
+- **Flask** — web framework, routing, sessions
+- **SQLite** — local database, no setup needed
+- **Jinja2** — HTML templating (comes with Flask)
+- **DM Sans** — font from Google Fonts
+- **Vanilla CSS** — no frameworks, written from scratch
+
+---
 
 ## Notes
 
+- Everything runs locally, no internet connection needed after setup
 - The database file (herSpace.db) is created automatically when you run the application
 - All data is stored locally in the SQLite database
 - The application runs in debug mode by default
-"# herspace" 
+- Passwords are stored as plain text — we know this isn't secure for real apps, but this is a local academic project

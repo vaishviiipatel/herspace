@@ -5,12 +5,12 @@
 {% block content %}
 <!-- Filter Pills -->
 <div class="filter-bar">
-    <a href="{{ url_for('home') }}" class="filter-pill{% if not filter %} active{% endif %}">All</a>
-    <a href="{{ url_for('home') }}?filter=support" class="filter-pill{% if filter == 'support' %} active{% endif %}">Support</a>
-    <a href="{{ url_for('home') }}?filter=advice" class="filter-pill{% if filter == 'advice' %} active{% endif %}">Advice</a>
-    <a href="{{ url_for('home') }}?filter=experience" class="filter-pill{% if filter == 'experience' %} active{% endif %}">Experience</a>
-    <a href="{{ url_for('home') }}?filter=question" class="filter-pill{% if filter == 'question' %} active{% endif %}">Question</a>
-    <a href="{{ url_for('home') }}?filter=anonymous" class="filter-pill{% if filter == 'anonymous' %} active{% endif %}">Anonymous</a>
+    <a href="{{ url_for('home') }}" class="filter-pill{% if not current_category %} active{% endif %}">All</a>
+    <a href="{{ url_for('home', category='Support') }}" class="filter-pill{% if current_category == 'Support' %} active{% endif %}">Support</a>
+    <a href="{{ url_for('home', category='Advice') }}" class="filter-pill{% if current_category == 'Advice' %} active{% endif %}">Advice</a>
+    <a href="{{ url_for('home', category='Experience') }}" class="filter-pill{% if current_category == 'Experience' %} active{% endif %}">Experience</a>
+    <a href="{{ url_for('home', category='Question') }}" class="filter-pill{% if current_category == 'Question' %} active{% endif %}">Question</a>
+    <a href="{{ url_for('home', category='General') }}" class="filter-pill{% if current_category == 'General' %} active{% endif %}">General</a>
 </div>
 
 <!-- Posts Feed -->
@@ -37,18 +37,62 @@
                 {{ post.content }}
             </div>
             
+            <!-- Comments Section -->
+            <div class="comments-section" id="comments-{{ post.id }}">
+                <div class="comment-form">
+                    <form method="POST" action="{{ url_for('add_comment', post_id=post.id) }}">
+                        <input type="hidden" name="category" value="{{ current_category or '' }}">
+                        <textarea name="content" placeholder="Write a comment..." rows="2" required></textarea>
+                        <div class="form-row">
+                            <label>
+                                <input type="checkbox" name="anonymous"> Anonymous
+                            </label>
+                            <button type="submit" class="btn-small">Comment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
             <div class="post-actions">
-                <button class="action-btn">
-                    <span class="action-icon">♡</span>
-                    <span class="action-count">0</span>
-                </button>
-                <button class="action-btn">
+                <!-- Like/Unlike -->
+                {% if session.user_id %}
+                    {% if post.id in user_likes %}
+                    <form method="POST" action="{{ url_for('unlike_post', post_id=post.id) }}" style="display:inline;">
+                        <input type="hidden" name="category" value="{{ current_category or '' }}">
+                        <button type="submit" class="action-btn liked">
+                            <span class="action-icon">♥</span>
+                            <span class="action-count">{{ like_counts.get(post.id, 0) }}</span>
+                        </button>
+                    </form>
+                    {% else %}
+                    <form method="POST" action="{{ url_for('like_post', post_id=post.id) }}" style="display:inline;">
+                        <input type="hidden" name="category" value="{{ current_category or '' }}">
+                        <button type="submit" class="action-btn">
+                            <span class="action-icon">♡</span>
+                            <span class="action-count">{{ like_counts.get(post.id, 0) }}</span>
+                        </button>
+                    </form>
+                    {% endif %}
+                {% else %}
+                    <span class="action-btn disabled">
+                        <span class="action-icon">♡</span>
+                        <span class="action-count">{{ like_counts.get(post.id, 0) }}</span>
+                    </span>
+                {% endif %}
+
+                <!-- Comment Toggle -->
+                <button type="button" class="action-btn comment-toggle" onclick="document.getElementById('comments-{{ post.id }}').classList.toggle('open')">
                     <span class="action-icon">↳</span>
-                    <span class="action-count">0</span>
+                    <span class="action-count">{{ comment_counts.get(post.id, 0) }}</span>
                 </button>
-                <button class="action-btn bookmark">
-                    <span class="action-icon">♡</span>
-                </button>
+
+                <!-- Delete own post -->
+                {% if session.user_id and post.user_id == session.user_id %}
+                <a href="{{ url_for('delete_post', post_id=post.id) }}?category={{ current_category or '' }}" class="action-btn delete" onclick="return confirm('Delete this post?')">
+                    <span class="action-icon">✕</span>
+                    <span>Delete</span>
+                </a>
+                {% endif %}
             </div>
         </article>
         {% endfor %}
